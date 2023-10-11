@@ -26,7 +26,7 @@ class Settings(BaseSettings):
             password=info.data.get("POSTGRES_PASSWORD"),
             host=info.data.get("POSTGRES_SERVER"),
             port=info.data.get("POSTGRES_PORT"),
-            path=f"/{info.data.get('POSTGRES_DB') or ''}",
+            path=f"{info.data.get('POSTGRES_DB') or ''}",
         )
 
     class Config:
