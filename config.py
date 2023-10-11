@@ -1,7 +1,8 @@
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Optional, Any
 from pydantic_settings import BaseSettings
-from pydantic import PostgresDsn, validator
+from pydantic import PostgresDsn, field_validator
+from pydantic_core.core_schema import FieldValidationInfo
 
 
 BASE_DIR = Path(__file__).parent
@@ -9,22 +10,22 @@ BASE_DIR = Path(__file__).parent
 
 class Settings(BaseSettings):
 
-    POSTGRES_SERVER: str
     POSTGRES_USER: str
+    POSTGRES_SERVER: str
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
     SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn] = None
 
-    @validator("SQLALCHEMY_DATABASE_URI", pre=True)
-    def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
+    @field_validator("SQLALCHEMY_DATABASE_URI", mode='after')
+    def assemble_db_connection(cls, v: Optional[str], info: FieldValidationInfo) -> Any:
         if isinstance(v, str):
             return v
         return PostgresDsn.build(
-            scheme="postgresql",
-            user=values.get("POSTGRES_USER"),
-            password=values.get("POSTGRES_PASSWORD"),
-            host=values.get("POSTGRES_SERVER"),
-            path=f"/{values.get('POSTGRES_DB') or ''}",
+            scheme="postgresql+asyncpg",
+            username=info.data.get("POSTGRES_USER"),
+            password=info.data.get("POSTGRES_PASSWORD"),
+            host=info.data.get("POSTGRES_SERVER"),
+            path=f"/{info.data.get('POSTGRES_DB') or ''}",
         )
 
     class Config:
