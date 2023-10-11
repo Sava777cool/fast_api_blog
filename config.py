@@ -9,14 +9,14 @@ BASE_DIR = Path(__file__).parent
 
 
 class Settings(BaseSettings):
-
     POSTGRES_USER: str
     POSTGRES_SERVER: str
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
+    POSTGRES_PORT: int
     SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn] = None
 
-    @field_validator("SQLALCHEMY_DATABASE_URI", mode='after')
+    @field_validator("SQLALCHEMY_DATABASE_URI", mode="after")
     def assemble_db_connection(cls, v: Optional[str], info: FieldValidationInfo) -> Any:
         if isinstance(v, str):
             return v
@@ -25,6 +25,7 @@ class Settings(BaseSettings):
             username=info.data.get("POSTGRES_USER"),
             password=info.data.get("POSTGRES_PASSWORD"),
             host=info.data.get("POSTGRES_SERVER"),
+            port=info.data.get("POSTGRES_PORT"),
             path=f"/{info.data.get('POSTGRES_DB') or ''}",
         )
 
